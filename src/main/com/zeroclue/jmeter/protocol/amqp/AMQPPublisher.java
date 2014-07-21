@@ -156,7 +156,8 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
      * @return the message headers for the sample
      */
     public String getHeaders() {
-        return getPropertyAsString(HEADERS);
+        String headers = getPropertyAsString(HEADERS);
+        return headers;
     }
 
     public void setHeaders(String content) {
@@ -235,14 +236,19 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
         int deliveryMode = getPersistent() ? 2 : 1;
 
-        JSONObject jsonObj = (JSONObject) JSONSerializer.toJSON(getHeaders());
+        JSONObject jsonObj = new JSONObject();
+        try {
+            jsonObj = (JSONObject) JSONSerializer.toJSON(getHeaders());
+        } catch (Exception ex) {
+            log.error("Failed to initialize publishProperties : ", ex);
+        }
         Map<String, Object> headers = (Map<String, Object>) jsonObj;
 
         Map<String, Object> parent_headers = parentProps.getHeaders();
 
         try {
             if (parent_headers == null){
-                parent_headers = headers
+                parent_headers = headers;
             }
 
             Iterator<Map.Entry<String, Object>> it = headers.entrySet().iterator();
