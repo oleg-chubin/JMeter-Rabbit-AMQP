@@ -1,8 +1,15 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
 import com.rabbitmq.client.AMQP;
+
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.util.JSONUtils;
+
 import java.io.IOException;
 import java.security.*;
+import java.util.Iterator;
+import java.util.Map;
 
 import com.rabbitmq.client.MessageProperties;
 import org.apache.jmeter.samplers.Entry;
@@ -31,6 +38,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     //++ These are JMX names, and must not be changed
     private final static String MESSAGE = "AMQPPublisher.Message";
+    private final static String HEADERS = "AMQPPublisher.MessageHeaders";
     private final static String MESSAGE_ROUTING_KEY = "AMQPPublisher.MessageRoutingKey";
     private final static String MESSAGE_TYPE = "AMQPPublisher.MessageType";
     private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
@@ -105,6 +113,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
             result.setResponseMessage("OK");
             result.setSuccessful(true);
         } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
             log.debug(ex.getMessage(), ex);
             result.setResponseCode("000");
             result.setResponseMessage(ex.toString());
@@ -141,6 +150,17 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     public void setMessage(String content) {
         setProperty(MESSAGE, content);
+    }
+
+    /**
+     * @return the message headers for the sample
+     */
+    public String getHeaders() {
+        return getPropertyAsString(HEADERS);
+    }
+
+    public void setHeaders(String content) {
+        setProperty(HEADERS, content);
     }
 
     /**
@@ -215,13 +235,39 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
         int deliveryMode = getPersistent() ? 2 : 1;
 
+        JSONObject jsonObj = (JSONObject) JSONSerializer.toJSON(getHeaders());
+        Map<String, Object> headers = (Map<String, Object>) jsonObj;
+
+        Map<String, Object> parent_headers = parentProps.getHeaders();
+
+        try {
+            if (parent_headers == null){
+                parent_headers = headers
+            }
+
+            Iterator<Map.Entry<String, Object>> it = headers.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, Object> pairs = it.next();
+                parent_headers.put(pairs.getKey(), pairs.getValue());
+            }
+
+            AMQP.BasicProperties publishProperties =
+                    new AMQP.BasicProperties(parentProps.getContentType(), parentProps.getContentEncoding(),
+                    headers, deliveryMode, parentProps.getPriority(),
+                    getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
+                    parentProps.getMessageId(), parentProps.getTimestamp(), getMessageType(),
+                    parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
+
+            return publishProperties;
+        } catch (Exception ex) {
+            log.error("Failed to initialize publishProperties : ", ex);
+        }
         AMQP.BasicProperties publishProperties =
                 new AMQP.BasicProperties(parentProps.getContentType(), parentProps.getContentEncoding(),
                 parentProps.getHeaders(), deliveryMode, parentProps.getPriority(),
                 getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
                 parentProps.getMessageId(), parentProps.getTimestamp(), getMessageType(),
                 parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
-
         return publishProperties;
     }
 

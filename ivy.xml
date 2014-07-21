@@ -1,4 +1,4 @@
-<ivy-module version="2.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
     <info organisation="com.zeroclue.jmeter.protocol.amqp" module="jmeter-rabbit-amqp"/>
     <configurations>
     <conf name="build" description="Libraries needed to for compilation"/>
@@ -17,5 +17,12 @@
         <dependency org="avalon-logkit" name="avalon-logkit" rev="2.0" conf="build->default"/>
         <dependency org="com.rabbitmq" name="amqp-client" rev="3.0.4" conf="build->default"/>
         <dependency org="org.apache.jmeter" name="ApacheJMeter_core" rev="2.9" conf="build->default"/>       
+
+        <dependency org="net.sf.json-lib" name="json-lib" rev="2.4" conf="runtime->*"> 
+            <artifact name="json-lib" type="jar" m:classifier="jdk15"/>
+        </dependency>
+        <dependency org="net.sf.json-lib" name="json-lib" rev="2.4" conf="build->default"> 
+            <artifact name="json-lib" type="jar" m:classifier="jdk15"/>
+        </dependency>
     </dependencies>
 </ivy-module>

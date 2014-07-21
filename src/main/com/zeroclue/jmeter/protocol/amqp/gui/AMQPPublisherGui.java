@@ -32,6 +32,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     private final FilePanel messageFile = new FilePanel("Filename", ALL_FILES);
     */
     private JLabeledTextArea message = new JLabeledTextArea("Message Content");
+    private JLabeledTextArea headers = new JLabeledTextArea("Message Headers");
     private JLabeledTextField messageRoutingKey = new JLabeledTextField("Routing Key");
     private JLabeledTextField messageType = new JLabeledTextField("Message Type");
     private JLabeledTextField replyToQueue = new JLabeledTextField("Reply-To Queue");
@@ -74,6 +75,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         replyToQueue.setText(sampler.getReplyToQueue());
         correlationId.setText(sampler.getCorrelationId());
         message.setText(sampler.getMessage());
+        headers.setText(sampler.getHeaders());
     }
 
     /**
@@ -85,7 +87,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         modifyTestElement(sampler);
         return sampler;
     }
-
     /**
      * {@inheritDoc}
      */
@@ -102,6 +103,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
 
         sampler.setMessageRoutingKey(messageRoutingKey.getText());
         sampler.setMessage(message.getText());
+        sampler.setHeaders(headers.getText());
         sampler.setMessageType(messageType.getText());
         sampler.setReplyToQueue(replyToQueue.getText());
         sampler.setCorrelationId(correlationId.getText());
@@ -133,6 +135,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         mainPanel.add(replyToQueue);
         mainPanel.add(correlationId);
         mainPanel.add(message);
+        mainPanel.add(headers);
     }
 
     /**
@@ -148,5 +151,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         replyToQueue.setText("");
         correlationId.setText("");
         message.setText("");
+        headers.setText("");
     }
 }

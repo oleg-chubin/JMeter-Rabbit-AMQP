@@ -62,13 +62,18 @@
     </path>
     <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>     
   </target>
-  
+
   <target name="download-ivy" unless="skip.ivy.download" description="Download Ivy">
       <mkdir dir="${ivy.jar.dir}"/>
       <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
   </target>
 
-  <target name="package" depends="compile"
+  <target name="download-dependencies" unless="skip.dependencies.download" description="Download Dependencies">
+      <get src="http://central.maven.org/maven2/net/sf/ezmorph/ezmorph/1.0.6/ezmorph-1.0.6.jar" dest="${dest.dir}/ezmorph-1.0.6.jar" usetimestamp="true"/>
+      <get src="http://central.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.2/commons-beanutils-1.9.2.jar" dest="${dest.dir}/commons-beanutils-1.9.2.jar" usetimestamp="true"/>
+  </target>
+
+  <target name="package" depends="compile,download-dependencies"
      description="Compile everything and create the jars">
 
     <mkdir dir="${dest.dir}"/>
